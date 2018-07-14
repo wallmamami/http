@@ -67,7 +67,7 @@ int get_line(int sock, char line[], int size)
     //为了给最后一个放'\0'，所以是size-1
     while(i < size-1 && c != '\n')
     {
-        s = recv(sock, &c, 1, 0);
+       s = recv(sock, &c, 1, 0);
         if(s > 0)
         {
             if(c == '\r')
@@ -463,7 +463,10 @@ int main(int argc, char* argv[])
         }
 
         //向线程池中添加任务
-        threadpool_add_task(&pool, handler_request, (void*)new_sock);
+        if(-1 == threadpool_add_task(&pool, handler_request, (void*)new_sock))
+        {
+            printf("服务繁忙,连接失败!\n");
+        }
         ////创建线程
         //pthread_t tid;
         //pthread_create(&tid, NULL, handler_request, (void*)new_sock);

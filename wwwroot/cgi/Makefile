@@ -5,10 +5,8 @@ LIB_NAME=-lmysqlclient
 
 .PHONY:all
 
-all:Search insertData selectData
+all:insertData selectData
 
-Search:Search.c
-		gcc -o $@ $^
 insertData:insertData.c
 		gcc -o $@ $^ $(INCLUDE) $(LIB) $(LIB_NAME)
 selectData:selectData.c
@@ -17,4 +15,4 @@ selectData:selectData.c
 .PHONY:clean
 
 clean:
-	rm -f Search insertData selectData
+	rm -f insertData selectData
