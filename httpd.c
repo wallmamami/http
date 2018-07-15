@@ -463,10 +463,7 @@ int main(int argc, char* argv[])
         }
 
         //向线程池中添加任务
-        if(-1 == threadpool_add_task(&pool, handler_request, (void*)new_sock))
-        {
-            printf("服务繁忙,连接失败!\n");
-        }
+        threadpool_add_task(&pool, handler_request, (void*)new_sock);
         ////创建线程
         //pthread_t tid;
         //pthread_create(&tid, NULL, handler_request, (void*)new_sock);

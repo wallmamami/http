@@ -19,7 +19,7 @@ void selecdata(char* major, char* grade, char* subject)
     //printf("connect mysql success!\n");
 
     char sql[MAX];//用来保存sql的命令
-    sprintf(sql, "select * from college1");
+    sprintf(sql, "select * from college1 where major='%s' and grade='%s' and subject='%s'", major, grade, subject);
     mysql_query(mysql_fd, sql);
 
     //如果是选择这种命令就要获取结果
@@ -42,7 +42,12 @@ void selecdata(char* major, char* grade, char* subject)
         printf("<tr>");
         for(; j < col; j++)
         {
-            printf("<td>%s</td>", rowData[j]);
+            if(j == col-1)//只将最后一列转换为超链接
+            {
+                printf("<td><a href=\"http:\/\/172.20.10.9:9090%s\">Browse</a></td>", rowData[j]);
+            }
+            else
+                printf("<td>%s</td>", rowData[j]);
         }
         printf("</tr>");
     }
