@@ -122,7 +122,7 @@ static void show_404(int sock)
     sprintf(line, "\r\n");//一定注意，还有空行
     send(sock, line, strlen(line), 0);
 
-    const char* err = "wwwroot/error/404.html";
+    const char* err = "wwwroot/page.html/error/404.html";
     int fd = open(err, O_RDONLY);
     struct stat st;
     stat(err, &st);

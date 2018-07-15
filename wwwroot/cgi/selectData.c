@@ -28,13 +28,15 @@ void selecdata(char* major, char* grade, char* subject)
     int col = mysql_num_fields(res);
     MYSQL_FIELD* field = mysql_fetch_fields(res);
     int i = 0;
+    printf("<table align=\"center\" border=\"3\" width=300 height=180><center><font size=\"5\">testpaper list</font></caption></center>");
+    printf("<tr>");
     for(; i < col; i++)
     {
-        printf("%s\t", field[i].name);//列名
+        printf("<font size=\"5\"><td>%s</td></font>", field[i].name);//列名
     }
-    printf("\n");
+    //printf("\n");
     
-    printf("<table border=\"1\">");
+    printf("</tr>");
     for(i=0; i<row; i++)
     {
         MYSQL_ROW rowData = mysql_fetch_row(res);
