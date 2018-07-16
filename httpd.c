@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "threadpool.h"
 #include <sys/sendfile.h>
 #include <fcntl.h>
@@ -100,13 +101,14 @@ int get_line(int sock, char line[], int size)
 void clear_header(int sock)
 {
     char line[MAX];
+    int r;
 
     do
     {
-        get_line(sock, line, sizeof(line));
+        r = get_line(sock, line, sizeof(line));
 
-    }while(strcmp(line, "\n") != 0);//读到空行表示读完HTTP请求，因为GET方法一般是没有正文的
-}
+    }while(/*r != 0 &&*/ strcmp(line, "\n") != 0);//读到空行表示读完HTTP请求，因为GET方法一般是没有正文的
+}//!大BUG!!!!
 
 static void show_404(int sock)
 {
@@ -444,6 +446,9 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
+    //忽略SIGPIPE信号
+    signal(SIGPIPE, SIG_IGN);
+
     //创建线程池并初始化
     threadpool_t pool;
     threadpool_init(&pool, 2, 5);//创建两个空闲线程，线程池最多5个线程
@@ -463,7 +468,8 @@ int main(int argc, char* argv[])
         }
 
         //向线程池中添加任务
-        threadpool_add_task(&pool, handler_request, (void*)new_sock);
+        if(-1 == threadpool_add_task(&pool, handler_request, (void*)new_sock))
+            printf("-1 return\n");
         ////创建线程
         //pthread_t tid;
         //pthread_create(&tid, NULL, handler_request, (void*)new_sock);
