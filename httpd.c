@@ -278,6 +278,7 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
         if(strcasecmp(method, "POST") == 0)
         {
             int i = 0;
+            printf("http content=%d\n", content_length);
             for(; i < content_length; i++)
             {
                 read(sock, &c, 1);
