@@ -64,11 +64,12 @@ int get_line(int sock, char line[], int size)
     int c = 'a';
     int i = 0;
     ssize_t s = 0;
-
+    int count = 0;//用来标记共有几个\r\n,因为content_length标记的是本来的长度,但是这里如果是\r\n，
+                  //只是简单的换成\n,就相当于每次比content_length少了一个字节
     //为了给最后一个放'\0'，所以是size-1
     while(i < size-1 && c != '\n')
     {
-       s = recv(sock, &c, 1, 0);
+        s = recv(sock, &c, 1, 0);
         if(s > 0)
         {
             if(c == '\r')
@@ -83,6 +84,7 @@ int get_line(int sock, char line[], int size)
                 {
                     //读出来
                     recv(sock, &c, 1, 0);//c == '\n'
+                    count++;
                 }
             }
 
@@ -94,7 +96,7 @@ int get_line(int sock, char line[], int size)
     }
 
     line[i] = '\0';
-    return i;
+    return i+count;
 }
 
 
@@ -205,6 +207,24 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
                 content_length = atoi(line+16);
             }
         }while(strcmp(line, "\n") != 0);
+  
+        
+        printf("before content_length = %d\n", content_length);
+        line[0] = '\0';
+        //用POST方法来从浏览器使用HTML表单上传照片
+        //正文也有格式--类似请求行和请求报头
+        //所以先要读完格式
+        int len = 0;
+        int i = 0;
+        do
+        {
+            printf("i = %d\n", ++i);
+            len = get_line(sock, line, sizeof(line));
+            content_length -= len;
+            printf("len = %d\n", len);
+        }while(strcmp(line, "\n") != 0);
+    
+        printf("after content_length = %d\n len = %d\n", content_length, len);
 
         if(content_length == -1)
         {
@@ -278,12 +298,26 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
         if(strcasecmp(method, "POST") == 0)
         {
             int i = 0;
-            printf("http content=%d\n", content_length);
-            for(; i < content_length; i++)
+            for(i = 0; i < content_length; i++)
             {
+               // if(i > 54834)
+               // {
+               //     printf("i = %d\n", i);
+               // }
                 read(sock, &c, 1);
+               // if(i > 54834)
+               // {
+               //     printf("i = %d\n", i);
+               // }
+                //cgi程序读端一直读,http程序写端一直写，写端突然不写了也不关，读端阻塞
                 write(input[1], &c, 1);
+               // if(i > 54834)
+               // {
+               //     printf("i = %d\n", i);
+               // }
             }
+
+            printf("out of pipe\n");
         }
 
         while(read(output[0], &c, 1) > 0)
