@@ -13,7 +13,7 @@ int main()
 {
 
     //printf("mysql client Version: %s\n", mysql_get_client_info());
-    int fd = open("./test.jpeg", O_WRONLY|O_CREAT, 0666);
+    int fd = open("./test", O_WRONLY|O_CREAT, 0666);
     if(fd < 0)
     {
         printf("push failed\n");
