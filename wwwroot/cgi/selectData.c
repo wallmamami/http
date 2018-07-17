@@ -28,6 +28,7 @@ void selecdata(char* major, char* grade, char* subject)
     int col = mysql_num_fields(res);
     MYSQL_FIELD* field = mysql_fetch_fields(res);
     int i = 0;
+    printf("<body background=\"/picture/page/school.jpg\">");
     printf("<table align=\"center\" border=\"3\" width=300 height=180><center><font size=\"5\">testpaper list</font></caption></center>");
     printf("<tr>");
     for(; i < col; i++)

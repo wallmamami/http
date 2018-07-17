@@ -190,7 +190,8 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
     char method_env[MAX/32];
     char query_string_env[MAX];
     char content_length_env[MAX/16];
-
+    char filename[MAX/16];
+    char filename_env[MAX];
     //如果是GET方法,清空请求行和请求头部
     if(strcasecmp(method, "GET") == 0)
     {
@@ -215,13 +216,15 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
         //正文也有格式--类似请求行和请求报头
         //所以先要读完格式
         int len = 0;
-        int i = 0;
         do
         {
-            printf("i = %d\n", ++i);
             len = get_line(sock, line, sizeof(line));
             content_length -= len;
-            printf("len = %d\n", len);
+            if(strncmp(line, "Content-Disposition: ", 21) == 0)//POST请求正文中有这个字段，里面保存文件名
+            {
+                strcpy(filename, line+53);//+53拿到文件名只适应当前程序
+                printf("filename=%s\n", filename);
+            }
         }while(strcmp(line, "\n") != 0);
     
         printf("after content_length = %d\n len = %d\n", content_length, len);
@@ -282,6 +285,8 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
         {
             sprintf(content_length_env, "CONTENT_LENGTH=%d", content_length);
             putenv(content_length_env);
+            sprintf(filename_env, "FILENAME_ENV=%s", filename);
+            putenv(filename_env);
         }
         execl(path, path, NULL);//可以两个都是绝对路径
         exit(1);//能回来说明绝对错了
