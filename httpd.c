@@ -285,7 +285,7 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
         {
             sprintf(content_length_env, "CONTENT_LENGTH=%d", content_length);
             putenv(content_length_env);
-            sprintf(filename_env, "FILENAME_ENV=%s", filename);
+            sprintf(filename_env, "FILENAME=%s", filename);
             putenv(filename_env);
         }
         execl(path, path, NULL);//可以两个都是绝对路径
