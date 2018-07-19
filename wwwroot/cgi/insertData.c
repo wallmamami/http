@@ -35,7 +35,7 @@ void insertData(char* major, char* subject, char* grade, char* path)
         return;
     }
 
-    
+
     //insert into peer values('computer', 'math', 2015, '////');
     char sql[MAX];
     sprintf(sql, "insert into peer values('%s', '%s', %d, '%s')", major, subject, atoi(grade), path);
@@ -44,6 +44,14 @@ void insertData(char* major, char* subject, char* grade, char* path)
     mysql_query(mysql_fd, sql);
 }
 
+void return_html()
+{
+
+    printf("<body background=\"/picture/page/school.jpg\">");
+    printf("<font size=\"6\"><h1 style=\"text-align:center\">Successfully upload!</h1></font>");
+    printf("<center><font size=\"5\"><a href=\"http://172.20.10.9:9090/page.html/pull.html\">PULL</a></font></center>");
+    printf("<center><font size=\"5\"><a href=\"http://172.20.10.9:9090/page.html/push.html\">PUSH</a></font></center>");
+}
 //根据照片格式格式找到上传文件的存放路径
 void get_path(char path[])
 {
@@ -67,7 +75,7 @@ void get_path(char path[])
     type[len-2] = '\0';//去掉"
     //printf("len=%d type = %s\n", len, type);
     //printf("%s\n", buf);
-    
+
     char name[MAX/32] = {};
     strcpy(path, "./wwwroot/picture/peer/");
     strcat(path, major);
@@ -94,7 +102,7 @@ int main()
     char path[MAX] = {};
     get_path(path);
     printf("path = %s\n", path);
-    
+
     int fd = open(path, O_WRONLY|O_CREAT, 0666);
     if(fd < 0)
     {
@@ -102,5 +110,6 @@ int main()
         return 0;
     }
     recvData(fd, content_length);
+    return_html();
     return 0;
 }
