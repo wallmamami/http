@@ -65,7 +65,7 @@ int get_line(int sock, char line[], int size)
     int i = 0;
     ssize_t s = 0;
     int count = 0;//用来标记共有几个\r\n,因为content_length标记的是本来的长度,但是这里如果是\r\n，
-                  //只是简单的换成\n,就相当于每次比content_length少了一个字节
+    //只是简单的换成\n,就相当于每次比content_length少了一个字节
     //为了给最后一个放'\0'，所以是size-1
     while(i < size-1 && c != '\n')
     {
@@ -172,7 +172,17 @@ void echo_www(int sock, char path[], int size, int* err)
     //响应也需要响应标准格式(响应行, 响应报头)
     sprintf(line, "HTTP/1.0 200 OK\r\n");
     send(sock, line, strlen(line), 0);
-    sprintf(line, "Content-Type: text/html\r\n");
+
+    //对请求的资源进行判断，使其可以显示pdf文件
+    printf("path = %s %s\n",path+strlen(path)-3, path);
+    if(strcasecmp("pdf", path+strlen(path)-3) == 0)
+    {
+        sprintf(line, "Content-Type: application/pdf\r\n");
+    }
+    else
+    {
+        sprintf(line, "Content-Type: text/html\r\n");
+    }
     send(sock, line, strlen(line), 0);
 
     sprintf(line, "\r\n");//一定注意，还有空行
@@ -210,8 +220,8 @@ int exe_cgi(int sock, char path[], char method[], char* query_string, int* err)
                 content_length = atoi(line+16);
             }
         }while(strcmp(line, "\n") != 0);
-  
-        
+
+
         printf("before content_length = %d\n", content_length);
         line[0] = '\0';
         //用POST方法来从浏览器使用HTML表单上传照片
@@ -227,7 +237,7 @@ int exe_cgi(int sock, char path[], char method[], char* query_string, int* err)
                 strcpy(filename, line+53);//+53拿到文件名只适应当前程序
             }
         }while(strcmp(line, "\n") != 0);
-    
+
         //printf("after content_length = %d\n len = %d\n", content_length, len);
         printf("filename=%s\n", filename);
         if(content_length == -1)
@@ -235,13 +245,13 @@ int exe_cgi(int sock, char path[], char method[], char* query_string, int* err)
             return 404;
         }
     }
+    
     sprintf(line, "HTTP/1.0 200 OK\r\n");
     send(sock, line, strlen(line), 0);
     sprintf(line, "Content-Type: text/html\r\n");
     send(sock, line, strlen(line), 0);
     sprintf(line, "\r\n");
     send(sock, line, strlen(line), 0);
-
     //如果是POST方法,需要父进程读取请求正文的内容交给子进程
     //这里就需要管道让父子进程可以通信，并且需要两个，因为子进程也需要
     //将执行结果放回给父进程
@@ -306,21 +316,21 @@ int exe_cgi(int sock, char path[], char method[], char* query_string, int* err)
             int i = 0;
             for(i = 0; i < content_length; i++)
             {
-               // if(i > 54834)
-               // {
-               //     printf("i = %d\n", i);
-               // }
+                // if(i > 54834)
+                // {
+                //     printf("i = %d\n", i);
+                // }
                 read(sock, &c, 1);
-               // if(i > 54834)
-               // {
-               //     printf("i = %d\n", i);
-               // }
+                // if(i > 54834)
+                // {
+                //     printf("i = %d\n", i);
+                // }
                 //cgi程序读端一直读,http程序写端一直写，写端突然不写了也不关，读端阻塞
                 write(input[1], &c, 1);
-               // if(i > 54834)
-               // {
-               //     printf("i = %d\n", i);
-               // }
+                // if(i > 54834)
+                // {
+                //     printf("i = %d\n", i);
+                // }
             }
 
             printf("out of pipe\n");
