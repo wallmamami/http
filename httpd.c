@@ -118,7 +118,7 @@ static void show_404(int sock)
 
     char line[MAX];
     //响应也需要响应标准格式(响应行, 响应报头)
-    sprintf(line, "HTTP/1.0 200 OK\r\n");
+    sprintf(line, "HTTP/1.0 404 NOT Found\r\n");
     send(sock, line, strlen(line), 0);
     sprintf(line, "Content-Type: text/html\r\n");
     send(sock, line, strlen(line), 0);
@@ -135,11 +135,12 @@ static void show_404(int sock)
     close(fd);
 
 }
+
 static void echo_error(int errCode, int sock)
 {
     switch(errCode)
     {
-    case 403:
+    case 400:
         break;
     case 404:
         show_404(sock);
@@ -181,8 +182,9 @@ void echo_www(int sock, char path[], int size, int* err)
     close(fd);
 }
 
+
 //提供cgi机制
-int exe_cgi(int sock, char path[], char method[], char* query_string)
+int exe_cgi(int sock, char path[], char method[], char* query_string, int* err)
 {
 
     char line[MAX];
@@ -223,12 +225,11 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
             if(strncmp(line, "Content-Disposition: ", 21) == 0)//POST请求正文中有这个字段，里面保存文件名
             {
                 strcpy(filename, line+53);//+53拿到文件名只适应当前程序
-                printf("filename=%s\n", filename);
             }
         }while(strcmp(line, "\n") != 0);
     
         //printf("after content_length = %d\n len = %d\n", content_length, len);
-
+        printf("filename=%s\n", filename);
         if(content_length == -1)
         {
             return 404;
@@ -259,7 +260,7 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
     pid_t id = fork();
     if(id < 0)
     {
-        return 404;
+        return 0;
     }
     else if(id == 0)//child
     {
@@ -427,7 +428,7 @@ static void* handler_request(void* arg)
     //因为http请求中的路径的根目录就是服务器的根目录就是这里的wwwroot,所以将其添加进去
     sprintf(path, "wwwroot%s", url);
 
-    //如果请求中url为某个目录,默认响应"首页"
+    //如果请求中url为某个目录,默认响应"首页", &errCode
     if(path[strlen(path)-1] == '/')
     {
         strcat(path, HOME_PAGE);
@@ -457,7 +458,7 @@ static void* handler_request(void* arg)
         }
         if(cgi)
         {
-            exe_cgi(sock, path, method, query_string);
+            printf("cgi return:%d\n", exe_cgi(sock, path, method, query_string, &errCode));
         }
 
         else
@@ -470,8 +471,10 @@ static void* handler_request(void* arg)
 
 #endif
 end:
+    printf("errCode:%d\n", errCode);
     if(errCode != 200)
     {
+        printf("into echo_error\n");
         echo_error(errCode, sock);
     }
     close(sock);

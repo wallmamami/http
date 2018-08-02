@@ -52,6 +52,40 @@ void return_html()
     printf("<center><font size=\"5\"><a href=\"http://172.20.10.9:9090/page.html/pull.html\">PULL</a></font></center>");
     printf("<center><font size=\"5\"><a href=\"http://172.20.10.9:9090/page.html/push.html\">PUSH</a></font></center>");
 }
+//判断文件名格式是否正确
+//major_subject_grade
+//computer_math_2015.txt
+int FileNameIsRight(char* filename)
+{
+    int count1 = 0;//标记字符'_'的数目
+    int count2 = 0;//标记字符'.'的数目
+    char* ptr = filename;
+    //printf("%s\n", ptr);
+    int len = strlen(ptr);
+    if(ptr == NULL || *ptr == '\0')
+        return 0;
+    int i = 0;
+    for(; i < len; ++i)
+    {
+        if(ptr[i] == '_')
+            ++count1;
+        if(ptr[i] == '.')
+            ++count2;
+
+    }
+    if(count1 == 2 && count2 == 1)//格式规定由两个下划线和一个.
+        return 1;
+    return 0;
+}
+void echo_400()
+{
+    printf("<body background=\"/picture/page/school.jpg\">");
+    printf("<font size=\"6\"><h1 style=\"text-align:center\">Format Error!</h1></font>");
+    printf("<center><font size=\"5\"><a href=\"http://172.20.10.9:9090/page.html/pull.html\">PULL</a></font></center>");
+    printf("<center><font size=\"5\"><a href=\"http://172.20.10.9:9090/page.html/push.html\">PUSH</a></font></center>");
+    exit(1);
+}
+
 //根据照片格式格式找到上传文件的存放路径
 void get_path(char path[])
 {
@@ -65,6 +99,9 @@ void get_path(char path[])
     char* type = NULL;
 
     strcpy(buf, getenv("FILENAME"));
+    if(!FileNameIsRight(buf))
+        return echo_400();
+
     major = strtok(buf, "_");
     major++;
     subject = strtok(NULL, "_");
