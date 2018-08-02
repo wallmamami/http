@@ -227,7 +227,7 @@ int exe_cgi(int sock, char path[], char method[], char* query_string)
             }
         }while(strcmp(line, "\n") != 0);
     
-        printf("after content_length = %d\n len = %d\n", content_length, len);
+        //printf("after content_length = %d\n len = %d\n", content_length, len);
 
         if(content_length == -1)
         {
