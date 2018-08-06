@@ -100,7 +100,7 @@ int get_line(int sock, char line[], int size)
 }
 
 
-void clear_header(int sock)
+int clear_header(int sock)
 {
     char line[MAX];
     int r;
@@ -109,7 +109,9 @@ void clear_header(int sock)
     {
         r = get_line(sock, line, sizeof(line));
 
-    }while(/*r != 0 &&*/ strcmp(line, "\n") != 0);//读到空行表示读完HTTP请求，因为GET方法一般是没有正文的
+    }while(r != 0 && strcmp(line, "\n") != 0);//读到空行表示读完HTTP请求，因为GET方法一般是没有正文的
+
+    return r;
 }//!大BUG!!!!
 
 static void show_404(int sock)
@@ -158,8 +160,12 @@ void echo_www(int sock, char path[], int size, int* err)
 {
     //进入这里，说明一定是GET方法，之前只是读了HTTP请求的请求行
     //在响应之前一定要保证读完HTTP请求
-    clear_header(sock);
-
+    if(!clear_header(sock))
+    {
+        //返回0，请求都没读完，浏览器就关闭了
+        return;
+    }
+    
     int fd = open(path, O_RDONLY);
     if(fd < 0)
     {
@@ -174,11 +180,17 @@ void echo_www(int sock, char path[], int size, int* err)
     send(sock, line, strlen(line), 0);
 
     //对请求的资源进行判断，使其可以显示pdf文件
-    printf("path = %s %s\n",path+strlen(path)-3, path);
+    printf("pathjpeg = %s\n", path);
     if(strcasecmp("pdf", path+strlen(path)-3) == 0)
     {
         sprintf(line, "Content-Type: application/pdf\r\n");
     }
+    //有bug！
+    //else if((strcasecmp("jpg", path+strlen(path)-3) == 0) || strcasecmp("jpeg", path+strlen(path)-4) == 0)
+    //{
+    //    printf("hahah  jpg ###########\n");
+    //    sprintf(line, "Content-Type: image/jpeg\r\n");
+    //}
     else
     {
         sprintf(line, "Content-Type: text/html\r\n");
@@ -245,7 +257,7 @@ int exe_cgi(int sock, char path[], char method[], char* query_string, int* err)
             return 404;
         }
     }
-    
+
     sprintf(line, "HTTP/1.0 200 OK\r\n");
     send(sock, line, strlen(line), 0);
     sprintf(line, "Content-Type: text/html\r\n");

@@ -19,7 +19,7 @@ void selecdata(char* major, char* grade, char* subject)
     //printf("connect mysql success!\n");
 
     char sql[MAX];//用来保存sql的命令
-    sprintf(sql, "select * from college1 where major='%s' and grade='%s' and subject='%s'", major, grade, subject);
+    sprintf(sql, "select path from college1 where major='%s' and grade='%s' and subject='%s'", major, grade, subject);
     mysql_query(mysql_fd, sql);
 
     //如果是选择这种命令就要获取结果
